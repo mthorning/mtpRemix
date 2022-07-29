@@ -5,7 +5,7 @@
     "build": "remix build",
     "dev": "remix dev",
     "start": "remix-serve build",
-    "db:up": "./scripts/startdb",
+    "db:up": "./scripts/start_db && npm run migrate up && ./scripts/seed_db",
     "db:down": "docker container stop mtp-pg && docker container rm mtp-pg",
     "db:reup": "npm run db:down && npm run db:up",
     "psql": "docker exec -it mtp-pg psql -U postgres mtp",
