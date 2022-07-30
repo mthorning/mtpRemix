@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
-docker exec -i mtp-pg psql -U postgres -d mtp << EOF
-  INSERT INTO users (name) values ('Matt');
+source ./.env
+docker exec -i mtp-pg psql -U $PGUSER -d $PGDATABASE << EOF
+  INSERT INTO users (email, display_name) values ('matt@gmail.com', 'Matt');
 EOF

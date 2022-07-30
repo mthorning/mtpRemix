@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 source .env
-docker run -d --name mtp-pg -p 5432:5432 -e POSTGRES_PASSWORD=$DATABASE_PASSWORD postgres
+docker run -d --name mtp-pg -p 5432:5432 -e POSTGRES_PASSWORD=$PGPASSWORD postgres
 sleep 1
-docker exec -it mtp-pg psql -U postgres -c 'CREATE DATABASE mtp'
+docker exec -i mtp-pg psql -U postgres << EOF
+  CREATE DATABASE $PGDATABASE;
+  CREATE ROLE $PGUSER LOGIN SUPERUSER PASSWORD '$PGPASSWORD';
+EOF

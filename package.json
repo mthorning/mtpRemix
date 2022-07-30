@@ -8,8 +8,8 @@
     "db:up": "./scripts/start_db && npm run migrate up && ./scripts/seed_db",
     "db:down": "docker container stop mtp-pg && docker container rm mtp-pg",
     "db:reup": "npm run db:down && npm run db:up",
-    "psql": "docker exec -it mtp-pg psql -U postgres mtp",
-    "migrate": "node-pg-migrate"
+    "psql": "source ./.env && docker exec -it mtp-pg psql -U $PGUSER $PGDATABASE",
+    "migrate": "export DATABASE_URL=postgres://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATASE && node-pg-migrate"
   },
   "dependencies": {
     "@remix-run/node": "^1.6.5",

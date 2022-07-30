@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 
-import { db } from "./db.server";
+import { pool } from "./db.server";
 
 type LoginForm = {
   username: string;
@@ -8,7 +8,7 @@ type LoginForm = {
 };
 
 export async function login({ username, password }: LoginForm) {
-  const user = await db.user.findUnique({
+  const user = await pool.user.findUnique({
     where: { username },
   });
   if (!user) return null;
