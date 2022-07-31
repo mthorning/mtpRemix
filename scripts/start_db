@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
 
 source .env
-docker run -d --name mtp-pg -p 5432:5432 -e POSTGRES_PASSWORD=$PGPASSWORD postgres
+
+CONTAINER=mtp-pg
+
+if [ "$(docker ps -q -f name=$CONTAINER)" ]; then
+    docker container stop $CONTAINER
+fi
+
+if [ "$(docker ps -aq -f status=exited -f name=$CONTAINER)" ]; then
+  docker rm $CONTAINER
+fi
+
+docker run -d --name $CONTAINER -p 5432:5432 -e POSTGRES_PASSWORD=$PGPASSWORD postgres
 sleep 1
-docker exec -i mtp-pg psql -U postgres << EOF
+docker exec -i $CONTAINER psql -U postgres << EOF
   CREATE DATABASE $PGDATABASE;
   CREATE ROLE $PGUSER LOGIN SUPERUSER PASSWORD '$PGPASSWORD';
 EOF

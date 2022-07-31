@@ -14,15 +14,20 @@ exports.shorthands = {
 exports.up = (pgm) => {
   pgm.createTable("users", {
     id: "id",
-    email: "name",
+    username: "name",
     display_name: "name",
     created_at: "ts",
   });
 
-  pgm.createTable("authentication", {
-    userId: "id",
+  pgm.createTable("passwords", {
+    id: "id",
+    user_id: {
+      type: "integer",
+      notNull: true,
+      references: '"users"',
+      onDelete: "cascade",
+    },
     password: { type: "varchar(60)", notNull: true },
-    salt: { type: "varchar(60)", notNull: true },
   });
 
   pgm.createTable("photos", {

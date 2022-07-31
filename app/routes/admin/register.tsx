@@ -1,10 +1,10 @@
 import type { ActionFunction, LinksFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData } from "@remix-run/react";
-
 import { pool } from "~/utils/db.server";
-import stylesUrl from "~/styles/login.css";
+import { createUserSession, register } from '../../utils/session.server'
 
+import stylesUrl from "~/styles/login-register.css";
 export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: stylesUrl }];
 };
@@ -27,6 +27,19 @@ function validatePasswordAgain(password: unknown, passwordAgain: unknown) {
   }
 }
 
+async function alreadyHasUser(): Promise<boolean> {
+  const { rowCount } = await pool.query('SELECT * FROM users LIMIT 1');
+  return !!rowCount;
+}
+
+export async function loader() {
+  const hasUser = await alreadyHasUser();
+  if (hasUser) {
+    return redirect("/admin/login");
+  }
+  return json({});
+}
+
 type ActionData = {
   formError?: string;
   fieldErrors?: {
@@ -46,7 +59,15 @@ type ActionData = {
 const badRequest = (data: ActionData) => json(data, { status: 400 });
 
 export const action: ActionFunction = async ({ request }) => {
+  const hasUser = await alreadyHasUser();
+  if (hasUser) {
+    return badRequest({
+      formError: `User already exists`,
+    });
+  }
+
   const form = await request.formData();
+
   const username = form.get("username");
   const displayName = form.get("displayName");
   const password = form.get("password");
@@ -72,7 +93,22 @@ export const action: ActionFunction = async ({ request }) => {
   if (Object.values(fieldErrors).some(Boolean))
     return badRequest({ fieldErrors, fields });
 
-  return redirect("/admin/login");
+  const { rowCount: userExists } = await pool.query('SELECT id FROM users WHERE username=$1 LIMIT 1', [username])
+
+  if (userExists) {
+    return badRequest({
+      fields,
+      formError: `User with username ${username} already exists`,
+    });
+  }
+  const userId = await register({ username, displayName, password });
+  if (!userId) {
+    return badRequest({
+      fields,
+      formError: `Something went wrong trying to create a new user.`,
+    });
+  }
+  return createUserSession(userId, '/admin');
 };
 
 export default function Register() {
@@ -80,10 +116,10 @@ export default function Register() {
 
   return (
     <div className="container">
-      <div className="content" data-light="">
+      <div className="content">
         <h1>Register</h1>
         <form method="post">
-          <div>
+          <fieldset>
             <label htmlFor="username-input">Username</label>
             <input
               type="text"
@@ -104,8 +140,8 @@ export default function Register() {
                 {actionData.fieldErrors.username}
               </p>
             ) : null}
-          </div>
-          <div>
+          </fieldset>
+          <fieldset>
             <label htmlFor="display-name-input">Display name</label>
             <input
               type="text"
@@ -128,8 +164,8 @@ export default function Register() {
                 {actionData.fieldErrors.displayName}
               </p>
             ) : null}
-          </div>
-          <div>
+          </fieldset>
+          <fieldset>
             <label htmlFor="password-input">Password</label>
             <input
               id="password-input"
@@ -152,8 +188,8 @@ export default function Register() {
                 {actionData.fieldErrors.password}
               </p>
             ) : null}
-          </div>
-          <div>
+          </fieldset>
+          <fieldset>
             <label htmlFor="password-again-input">Re-enter password</label>
             <input
               id="password-again-input"
@@ -178,7 +214,7 @@ export default function Register() {
                 {actionData.fieldErrors.passwordAgain}
               </p>
             ) : null}
-          </div>
+          </fieldset>
           <div id="form-error-message">
             {actionData?.formError ? (
               <p className="form-validation-error" role="alert">

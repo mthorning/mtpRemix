@@ -1,40 +1,16 @@
 import type { ActionFunction, LinksFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { useActionData, useSearchParams } from "@remix-run/react";
-
+import { json, redirect } from "@remix-run/node";
+import { useActionData } from "@remix-run/react";
 import { pool } from "~/utils/db.server";
-import stylesUrl from "~/styles/login.css";
+import { login, createUserSession } from "~/utils/session.server";
 
+import stylesUrl from "~/styles/login-register.css";
 export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: stylesUrl }];
 };
 
-function validateUsername(username: unknown) {
-  if (typeof username !== "string" || username.length < 3) {
-    return `Usernames must be at least 3 characters long`;
-  }
-}
-
-function validatePassword(password: unknown) {
-  if (typeof password !== "string" || password.length < 6) {
-    return `Passwords must be at least 6 characters long`;
-  }
-}
-
-function validateUrl(url: any) {
-  let urls = ["/jokes", "/", "https://remix.run"];
-  if (urls.includes(url)) {
-    return url;
-  }
-  return "/jokes";
-}
-
 type ActionData = {
   formError?: string;
-  fieldErrors?: {
-    username: string | undefined;
-    password: string | undefined;
-  };
   fields?: {
     username: string;
     password: string;
@@ -42,6 +18,16 @@ type ActionData = {
 };
 
 const badRequest = (data: ActionData) => json(data, { status: 400 });
+
+export async function loader() {
+  const { rowCount: hasUsers } = await pool.query(
+    "SELECT * FROM users LIMIT 1"
+  );
+  if (!hasUsers) {
+    return redirect("/admin/register");
+  }
+  return json({ ok: true });
+}
 
 export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
@@ -54,67 +40,42 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   const fields = { username, password };
-  const fieldErrors = {
-    username: validateUsername(username),
-    password: validatePassword(password),
-  };
-  if (Object.values(fieldErrors).some(Boolean))
-    return badRequest({ fieldErrors, fields });
+
+  const user = await login({ username, password });
+  if (!user) {
+    return badRequest({
+      fields,
+      formError: `Something went wrong trying to login`,
+    });
+  }
+  return createUserSession(user.id, '/admin');
 };
 
 export default function Login() {
   const actionData = useActionData<ActionData>();
   return (
     <div className="container">
-      <div className="content" data-light="">
+      <div className="content">
         <h1>Login</h1>
         <form method="post">
-          <div>
+          <fieldset>
             <label htmlFor="username-input">Username</label>
             <input
               type="text"
               id="username-input"
               name="username"
               defaultValue={actionData?.fields?.username}
-              aria-invalid={Boolean(actionData?.fieldErrors?.username)}
-              aria-errormessage={
-                actionData?.fieldErrors?.username ? "username-error" : undefined
-              }
             />
-            {actionData?.fieldErrors?.username ? (
-              <p
-                className="form-validation-error"
-                role="alert"
-                id="username-error"
-              >
-                {actionData.fieldErrors.username}
-              </p>
-            ) : null}
-          </div>
-          <div>
+          </fieldset>
+          <fieldset>
             <label htmlFor="password-input">Password</label>
             <input
               id="password-input"
               name="password"
               defaultValue={actionData?.fields?.password}
               type="password"
-              aria-invalid={
-                Boolean(actionData?.fieldErrors?.password) || undefined
-              }
-              aria-errormessage={
-                actionData?.fieldErrors?.password ? "password-error" : undefined
-              }
             />
-            {actionData?.fieldErrors?.password ? (
-              <p
-                className="form-validation-error"
-                role="alert"
-                id="password-error"
-              >
-                {actionData.fieldErrors.password}
-              </p>
-            ) : null}
-          </div>
+          </fieldset>
           <div id="form-error-message">
             {actionData?.formError ? (
               <p className="form-validation-error" role="alert">
