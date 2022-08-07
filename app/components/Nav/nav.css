@@ -1,0 +1,11 @@
+nav.top-menu {
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+nav.top-menu > * {
+  margin-left: 8px;
+}

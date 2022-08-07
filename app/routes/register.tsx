@@ -1,13 +1,11 @@
-import type { ActionFunction, LinksFunction } from "@remix-run/node";
+import type { ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData } from "@remix-run/react";
-import { pool } from "~/utils/db.server";
-import { createUserSession, register } from '../../utils/session.server'
+import { createUserSession, register, makeLinks, pool } from "~/utils";
 
-import stylesUrl from "~/styles/login-register.css";
-export const links: LinksFunction = () => {
-  return [{ rel: "stylesheet", href: stylesUrl }];
-};
+import routeStyles from "~/styles/login-register.css";
+import formStyles from "~/styles/form.css";
+export const links = makeLinks(routeStyles, formStyles)
 
 function validateName(username: unknown) {
   if (typeof username !== "string" || username.length < 3) {
@@ -28,14 +26,14 @@ function validatePasswordAgain(password: unknown, passwordAgain: unknown) {
 }
 
 async function alreadyHasUser(): Promise<boolean> {
-  const { rowCount } = await pool.query('SELECT * FROM users LIMIT 1');
+  const { rowCount } = await pool.query("SELECT * FROM users LIMIT 1");
   return !!rowCount;
 }
 
 export async function loader() {
   const hasUser = await alreadyHasUser();
   if (hasUser) {
-    return redirect("/admin/login");
+    return redirect("/login");
   }
   return json({});
 }
@@ -93,7 +91,10 @@ export const action: ActionFunction = async ({ request }) => {
   if (Object.values(fieldErrors).some(Boolean))
     return badRequest({ fieldErrors, fields });
 
-  const { rowCount: userExists } = await pool.query('SELECT id FROM users WHERE username=$1 LIMIT 1', [username])
+  const { rowCount: userExists } = await pool.query(
+    "SELECT id FROM users WHERE username=$1 LIMIT 1",
+    [username]
+  );
 
   if (userExists) {
     return badRequest({
@@ -101,6 +102,7 @@ export const action: ActionFunction = async ({ request }) => {
       formError: `User with username ${username} already exists`,
     });
   }
+
   const userId = await register({ username, displayName, password });
   if (!userId) {
     return badRequest({
@@ -108,7 +110,7 @@ export const action: ActionFunction = async ({ request }) => {
       formError: `Something went wrong trying to create a new user.`,
     });
   }
-  return createUserSession(userId, '/admin');
+  return createUserSession(userId, "/admin");
 };
 
 export default function Register() {

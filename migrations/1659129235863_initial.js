@@ -4,6 +4,7 @@ const { PgLiteral } = require("node-pg-migrate");
 
 exports.shorthands = {
   name: { type: "varchar(100)", notNull: true },
+  uniqueName: { type: "varchar(100)", notNull: true, unique: true },
   ts: {
     type: "timestamp",
     notNull: true,
@@ -14,7 +15,7 @@ exports.shorthands = {
 exports.up = (pgm) => {
   pgm.createTable("users", {
     id: "id",
-    username: "name",
+    username: "uniqueName",
     display_name: "name",
     created_at: "ts",
   });
@@ -32,7 +33,7 @@ exports.up = (pgm) => {
 
   pgm.createTable("photos", {
     id: "id",
-    name: "name",
+    title: "uniqueName",
     created_at: "ts",
   });
 };

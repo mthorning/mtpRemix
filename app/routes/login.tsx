@@ -1,13 +1,11 @@
-import type { ActionFunction, LinksFunction } from "@remix-run/node";
+import type { ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData } from "@remix-run/react";
-import { pool } from "~/utils/db.server";
-import { login, createUserSession } from "~/utils/session.server";
+import { pool, login, createUserSession, makeLinks } from "~/utils";
 
-import stylesUrl from "~/styles/login-register.css";
-export const links: LinksFunction = () => {
-  return [{ rel: "stylesheet", href: stylesUrl }];
-};
+import routeStyles from "~/styles/login-register.css";
+import formStyles from "~/styles/form.css";
+export const links = makeLinks(routeStyles, formStyles);
 
 type ActionData = {
   formError?: string;
@@ -24,7 +22,7 @@ export async function loader() {
     "SELECT * FROM users LIMIT 1"
   );
   if (!hasUsers) {
-    return redirect("/admin/register");
+    return redirect("/register");
   }
   return json({ ok: true });
 }
@@ -48,7 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
       formError: `Something went wrong trying to login`,
     });
   }
-  return createUserSession(user.id, '/admin');
+  return createUserSession(user.id, "/admin");
 };
 
 export default function Login() {

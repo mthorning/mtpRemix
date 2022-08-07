@@ -1,21 +1,33 @@
 import { useLoaderData } from "@remix-run/react";
-import { json, redirect } from "@remix-run/node";
-import { getUser } from "../../utils/session.server";
+import { json } from "@remix-run/node";
+import { pool } from "~/utils";
 
-export async function loader({ request }: { request: Request }) {
-  const user = await getUser(request);
-  if (!user) {
-    return redirect("/admin/login");
-  }
-  return json(user);
+interface Photo {
+  title: string;
+}
+
+export async function loader() {
+  const res = await pool.query("SELECT * FROM photos");
+  return json(res.rows);
 }
 
 export default function Admin() {
-  const user = useLoaderData();
+  const photos: Photo[] = useLoaderData();
   return (
     <>
       <h1>Admin</h1>
-      <p>Hello {user.display_name}</p>
+      <table>
+        <thead>
+          <th>Title</th>
+        </thead>
+        <tbody>
+          {photos.map((photo) => (
+            <tr>
+              <td>{photo.title}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </>
   );
 }

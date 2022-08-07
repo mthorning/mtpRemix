@@ -3,11 +3,17 @@ import { createCookieSessionStorage, redirect } from "@remix-run/node";
 
 import { pool } from "./db.server";
 
-type LoginForm = {
+interface LoginForm {
   username: string;
   password: string;
   displayName?: string;
 };
+
+export interface User {
+  id: number;
+  username: string;
+  displayName: string;
+}
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
@@ -29,22 +35,29 @@ function getUserSession(request: Request) {
   return storage.getSession(request.headers.get("Cookie"));
 }
 
-async function getUserId(request: Request) {
+async function getUserId(request: Request): Promise<number | null> {
   const session = await getUserSession(request);
   const userId = session.get("userId");
   if (!userId || typeof userId !== "number") return null;
   return userId;
 }
 
-export async function getUser(request: Request) {
+export async function getUser(request: Request): Promise<User | null> {
   const userId = await getUserId(request);
+  if(!userId) return null;
 
   const {
     rowCount,
-    rows: [user],
-  } = await pool.query("SELECT * FROM users WHERE id=$1 LIMIT 1", [userId]);
+    rows: [{ id, username, display_name}],
+  } = await pool.query("SELECT id, username, display_name FROM users WHERE id=$1 LIMIT 1", [userId]);
+
   if (!rowCount) throw logout(request);
-  return user;
+
+  return {
+    id,
+    username,
+    displayName: display_name
+  };
 }
 
 export async function login({ username, password }: LoginForm) {

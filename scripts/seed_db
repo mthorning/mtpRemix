@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
 source ./.env
-docker exec -i mtp-pg psql -U $PGUSER -d $PGDATABASE << EOF
+docker exec -i mtp-pg psql -U $PGUSER -d $PGDATABASE << 'EOF'
+INSERT INTO users (id, username, display_name, created_at) VALUES (1, 'matt', 'Matt', '2022-08-02 21:20:07.286626');
+INSERT INTO passwords (id, user_id, password) VALUES (1, 1, '$2a$10$xKO3QL3m7n3FzSRZl3k8VuuxQG2ISZ0fFR6h/Vn3rtq0WhThWiDtW');
 EOF
