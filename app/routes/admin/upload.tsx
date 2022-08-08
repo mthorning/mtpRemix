@@ -1,6 +1,6 @@
 import type { ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useSubmit, useActionData } from "@remix-run/react";
+import { useActionData } from "@remix-run/react";
 import { makeLinks, pool } from "~/utils";
 import Form from '~/components/Form'
 
@@ -66,7 +66,6 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Register() {
   const actionData = useActionData<ActionData>();
-  const submit = useSubmit();
 
   const formFields = [
     {
@@ -88,7 +87,7 @@ export default function Register() {
     <div className="content">
       <h1>Upload</h1>
       <Form
-        {...{ formFields, submit }}
+        formFields={formFields}
         formError={actionData?.formError}
         submitButtonText="Upload photo"
       />

@@ -1,16 +1,16 @@
 import { makeLinks } from "~/utils";
-import type { SubmitFunction } from "@remix-run/react";
+import { useSubmit } from "@remix-run/react";
 import formStyles from "./form.css";
 
 export const links = makeLinks(formStyles);
 
 interface FormProps {
-  submit: SubmitFunction;
   formFields: {[key: string]: any }[];
   submitButtonText: string;
   formError?: string;
 }
-export default function Form({ submit, formFields, formError, submitButtonText }: FormProps) {
+export default function Form({  formFields, formError, submitButtonText }: FormProps) {
+  const submit = useSubmit();
   return (
       <form method="post" className="form">
       {formFields.map(({ id, label, error, ...rest}) => (
