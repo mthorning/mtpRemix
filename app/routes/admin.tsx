@@ -25,7 +25,9 @@ export default function AdminRoute() {
   return (
     <>
       <Nav user={user} />
-      <Outlet context={context} />
+      <div className="container">
+        <Outlet context={context} />
+      </div>
     </>
   );
 }

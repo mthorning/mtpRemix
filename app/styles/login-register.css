@@ -16,7 +16,7 @@ body {
 
 .content {
   padding: 1rem;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   box-shadow: 0 0.2rem 1rem rgba(0, 0, 0, 0.5);
   width: 400px;
   max-width: 100%;
@@ -25,6 +25,6 @@ body {
 @media print, (min-width: 640px) {
   .content {
     padding: 2rem;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
   }
 }

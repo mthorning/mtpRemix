@@ -1,4 +1,4 @@
-nav.top-menu {
+.top-menu {
   padding: 16px;
   border: 1px solid var(--border-color);
   display: flex;
@@ -6,6 +6,6 @@ nav.top-menu {
   align-items: center;
 }
 
-nav.top-menu > * {
+.top-menu > * {
   margin-left: 8px;
 }

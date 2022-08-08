@@ -1,20 +1,20 @@
-form {
+.form {
   width: 100%;
 }
 
-form input {
+.form input {
   height: var(--input-height);
-  border-radius: 10px;
+  border-radius: var(--border-radius);
   border: 1px solid gray;
 }
 
-form button[type="submit"] {
+.form button[type="submit"] {
   float: right;
   background-color: var(--button-primary-background);
   color: var(--button-primary-color);
 }
 
-fieldset {
+.form fieldset {
   padding-left: 0;
   padding-right: 0;
   display: flex;
@@ -26,16 +26,16 @@ fieldset {
   color: var(--error-color);
 }
 
-fieldset {
+.form fieldset {
   display: flex;
   justify-content: center;
 }
 
-fieldset > :not(:last-child) {
+.form fieldset > :not(:last-child) {
   margin-right: 2rem;
 }
 
-.links ul {
+.form .links ul {
   margin-top: 1rem;
   padding: 0;
   list-style: none;
@@ -44,7 +44,7 @@ fieldset > :not(:last-child) {
   align-items: center;
 }
 
-.links a:hover {
+.form .links a:hover {
   text-decoration-style: wavy;
   text-decoration-thickness: 1px;
 }
